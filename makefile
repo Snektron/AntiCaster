@@ -8,8 +8,9 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
--include AntiCaster/src/util/subdir.mk
--include AntiCaster/src/math/subdir.mk
+-include AntiCaster/src/engine/util/subdir.mk
+-include AntiCaster/src/engine/math/subdir.mk
+-include AntiCaster/src/engine/subdir.mk
 -include AntiCaster/src/subdir.mk
 -include subdir.mk
 -include objects.mk

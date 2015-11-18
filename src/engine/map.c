@@ -1,5 +1,6 @@
 #include <malloc.h>
 #include "map.h"
+#include "math/vec2.h"
 
 void map_init(map_t* map, int width, int height, block_t* defaultBlock)
 {
@@ -32,4 +33,10 @@ block_t* map_getBlockAt(map_t* map, int x, int y)
 	if (x >= 0 && x < map->width && y >= 0 && y < map->height)
 		return &map->map[y*map->width+x];
 	return 0;
+}
+
+
+block_t* map_getBlockAtVec(map_t* map, vec2_t* pos)
+{
+	return map_getBlockAt(map, (int) pos->x, (int) pos->y);
 }

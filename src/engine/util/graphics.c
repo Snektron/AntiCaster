@@ -35,8 +35,6 @@ void graphics_hline(SDL_Surface* sf, int y, int x0, int x1, color_t c)
 		graphics_setPixel(sf, x, y, c);
 }
 
-#define abs(x) ((x)<0?-(x):(x))
-
 void graphics_line(SDL_Surface* sf, int x0, int y0, int x1, int y1, color_t c)
 {
 	int dx = abs(x1-x0), sx = x0<x1 ? 1 : -1;
