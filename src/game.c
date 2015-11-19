@@ -15,10 +15,14 @@
 camera_t player;
 map_t m;
 
-void game_init()
+int game_init()
 {
 	player.pos = (vec2_t) {5, 5};
 	player.dir = (vec2_t) {-1., 0.};
+
+	FILE *fp = fopen("map.txt", "r");
+	if (!fp)
+		return 1;
 
 	tile_t defaultWall = TILE_EMPTY;
 	tile_t bluewall = TILE_WALL(1,0xFF); //{1, FLAG_COLLIDABLE, 0, (vec2_t){1., 1.}};
@@ -26,30 +30,30 @@ void game_init()
 	tile_t redwall = TILE_WALL(3,0xFF00);
 	tile_t compressedWall = TILE_SPACE(((vec2_t){1., .1}));
 	tile_t stretchedWall = TILE_SPACE(((vec2_t){1., 10.}));
+	tile_t shwall = TILE_SPACE(((vec2_t){1., .1}));
+	tile_t svwall = TILE_SPACE(((vec2_t){.1, 1.}));
+	tile_t chwall = TILE_SPACE(((vec2_t){1., 10.}));
+	tile_t cvwall = TILE_SPACE(((vec2_t){10., 1.}));
 
 	map_init(&m, 20, 20, &defaultWall);
 
-	for (int i=0; i<20; i++)
-	{
-		map_setTileAt(&m, i, 0, &bluewall);
-		map_setTileAt(&m, i, 19, &bluewall);
-		map_setTileAt(&m, 0, i, &bluewall);
-		map_setTileAt(&m, 19, i, &bluewall);
+	int i = 0;
+	char c;
+	while ((c = fgetc(fp)) != EOF) {
+		if (c == '\n') continue;
+		else if (c == '#') map_setTileAt(&m, i/20, i%20, &bluewall);
+		else if (c == 'r') map_setTileAt(&m, i/20, i%20, &redwall);
+		else if (c == 'g') map_setTileAt(&m, i/20, i%20, &greenwall);
+		else if (c == '|') map_setTileAt(&m, i/20, i%20, &svwall);
+		else if (c == '-') map_setTileAt(&m, i/20, i%20, &shwall);
+		else if (c == '.') map_setTileAt(&m, i/20, i%20, &cvwall);
+		else if (c == ',') map_setTileAt(&m, i/20, i%20, &chwall);
+		i++;
 	}
 
-	map_setTileAt(&m, 10, 10, &greenwall);
-	map_setTileAt(&m, 11, 10, &compressedWall);
-	map_setTileAt(&m, 12, 10, &compressedWall);
-	map_setTileAt(&m, 13, 10, &compressedWall);
-	map_setTileAt(&m, 14, 10, &greenwall);
+	fclose(fp);
+	return 0;
 
-	map_setTileAt(&m, 10, 8, &greenwall);
-	map_setTileAt(&m, 11, 8, &stretchedWall);
-	map_setTileAt(&m, 12, 8, &stretchedWall);
-	map_setTileAt(&m, 13, 8, &stretchedWall);
-	map_setTileAt(&m, 14, 8, &greenwall);
-
-	map_setTileAt(&m, 11, 16, &redwall);
 }
 
 int game_update(int mousedx, int mousedy)
