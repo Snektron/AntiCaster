@@ -28,8 +28,8 @@ int game_init()
 	tile_t bluewall = TILE_WALL(1,0xFF); //{1, FLAG_COLLIDABLE, 0, (vec2_t){1., 1.}};
 	tile_t greenwall = TILE_WALL(2,0xFF00);
 	tile_t redwall = TILE_WALL(3,0xFF00);
-	tile_t compressedWall = TILE_SPACE(((vec2_t){1., .1}));
-	tile_t stretchedWall = TILE_SPACE(((vec2_t){1., 10.}));
+//	tile_t compressedWall = TILE_SPACE(((vec2_t){1., .1}));
+//	tile_t stretchedWall = TILE_SPACE(((vec2_t){1., 10.}));
 	tile_t shwall = TILE_SPACE(((vec2_t){1., .1}));
 	tile_t svwall = TILE_SPACE(((vec2_t){.1, 1.}));
 	tile_t chwall = TILE_SPACE(((vec2_t){1., 10.}));
@@ -53,7 +53,6 @@ int game_init()
 
 	fclose(fp);
 	return 0;
-
 }
 
 int game_update(int mousedx, int mousedy)
