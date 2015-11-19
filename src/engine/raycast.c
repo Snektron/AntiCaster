@@ -2,7 +2,8 @@
 #include <math.h>
 #include <stdio.h>
 #include "raycast.h"
-#include "map.h"
+#include "map/map.h"
+#include "map/tile.h"
 #include "math/vec2.h"
 #include "util/graphics.h"
 #include "util/util.h"
@@ -32,15 +33,10 @@ void raycast_render(SDL_Surface* sf, camera_t* cam, map_t* map)
 			continue;
 
 		double dist = hit.distance / sqrt(1+cx*cx);
-
 		int lineh = (int)(sf->h / dist);
-
-		if (hit.hitblock->type  == 1)
-			graphics_vline(sf, x, sf->h/2 - lineh/2, sf->h/2 + lineh/2, 0x0000FF - hit.side * 0x000022);
-		else if(hit.hitblock->type == 2)
-			graphics_vline(sf, x, sf->h/2 - lineh/2, sf->h/2 + lineh/2, 0x00FF00 - hit.side * 0x002200);
-		else
-			graphics_vline(sf, x, sf->h/2 - lineh/2, sf->h/2 + lineh/2, 0xFF0000 - hit.side * 0x220000);
+		tile_t* t = map_getTileAt(map, r.mapX, r.mapY);
+		if (t && tile_isVisible(t) && t->render)
+			t->render(sf, t, x, sf->h/2 - lineh/2, sf->h/2 + lineh/2, &hit);
 	}
 }
 
@@ -56,14 +52,14 @@ void raycast_travel(camera_t* cam, double distance, map_t* map)
 	r.mapX = (int) r.orig.x;
 	r.mapY = (int) r.orig.y;
 
-	block_t* b;
+	tile_t* t;
 
 	while (distance > 0)
 	{
 		raystep(&r, map);
 
-		b = map_getBlockAt(map, (int) cam->pos.x,  (int) cam->pos.y);
-		vec2_t s = b? b->space : (vec2_t){1,1};
+		t = map_getTileAt(map, (int) cam->pos.x,  (int) cam->pos.y);
+		vec2_t s = t? t->space : (vec2_t){1,1};
 		vec2_t oldpos = cam->pos;
 
 		vec2_mul(&s, &cam->dir, &s);
@@ -74,8 +70,8 @@ void raycast_travel(camera_t* cam, double distance, map_t* map)
 		distance -= r.distance;
 		r.distance = 0;
 
-		b = map_getBlockAt(map, (int) cam->pos.x,  (int) cam->pos.y);
-		if (b && b->type > 0)
+		t = map_getTileAt(map, (int) cam->pos.x,  (int) cam->pos.y);
+		if (t && tile_isCollidable(t))
 		{
 			cam->pos = oldpos;
 			break;
@@ -95,11 +91,10 @@ void cast(ray_t* r, hit_t* hit, map_t* map)
 	{
 		raystep(r, map);
 
-		block_t* hb = map_getBlockAt(map, r->mapX, r->mapY);
-		if (hb && hb->type > 0)
+		tile_t* ht = map_getTileAt(map, r->mapX, r->mapY);
+		if (ht && ht->type > 0)
 		{
 			hit->distance = r->distance;
-			hit->hitblock = hb;
 			hit->side = r->side;
 			hit->hit = 1;
 			hit->point = r->orig;
@@ -111,8 +106,8 @@ void cast(ray_t* r, hit_t* hit, map_t* map)
 // get next block hit.
 void raystep(ray_t* r, map_t* map)
 {
-	block_t* b = map_getBlockAt(map, r->mapX, r->mapY);
-	vec2_t s = b? b->space : (vec2_t){1,1};
+	tile_t* t = map_getTileAt(map, r->mapX, r->mapY);
+	vec2_t s = t? t->space : (vec2_t){1,1};
 
 	r->dir = r->startdir;
 
