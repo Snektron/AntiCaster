@@ -7,7 +7,6 @@
 #include "engine/map/map.h"
 #include "engine/map/tile.h"
 #include "engine/math/vec2.h"
-#include "engine/util/graphics.h"
 
 #define PLAYER_MOVESPEED 0.05
 #define PLAYER_ROTSPEED 0.007
@@ -18,22 +17,21 @@ map_t m;
 int game_init()
 {
 	player.pos = (vec2_t) {5, 5};
-	player.dir = (vec2_t) {-1., 0.};
+	raycast_getSideNormal(SIDE_NORTH, &player.dir);
 
 	FILE *fp = fopen("map.txt", "r");
 	if (!fp)
 		return 1;
 
 	tile_t defaultWall = TILE_EMPTY;
-	tile_t bluewall = TILE_WALL(1,0xFF); //{1, FLAG_COLLIDABLE, 0, (vec2_t){1., 1.}};
-	tile_t greenwall = TILE_WALL(2,0xFF00);
-	tile_t redwall = TILE_WALL(3,0xFF00);
-	tile_t compressedWall = TILE_SPACE(((vec2_t){1., .1}));
-	tile_t stretchedWall = TILE_SPACE(((vec2_t){1., 10.}));
+	tile_t bluewall = TILE_WALL(0xFF); //{1, FLAG_COLLIDABLE, 0, (vec2_t){1., 1.}};
+	tile_t greenwall = TILE_WALL(0xFF00);
+	tile_t redwall = TILE_WALL(0xFF0000);
 	tile_t shwall = TILE_SPACE(((vec2_t){1., .1}));
 	tile_t svwall = TILE_SPACE(((vec2_t){.1, 1.}));
 	tile_t chwall = TILE_SPACE(((vec2_t){1., 10.}));
 	tile_t cvwall = TILE_SPACE(((vec2_t){10., 1.}));
+	tile_t mirrorWall = TILE_MIRROR();
 
 	map_init(&m, 20, 20, &defaultWall);
 
@@ -48,23 +46,24 @@ int game_init()
 		else if (c == '-') map_setTileAt(&m, i/20, i%20, &shwall);
 		else if (c == '.') map_setTileAt(&m, i/20, i%20, &cvwall);
 		else if (c == ',') map_setTileAt(&m, i/20, i%20, &chwall);
+		else if (c == 'm') map_setTileAt(&m, i/20, i%20, &mirrorWall);
 		i++;
 	}
 
 	fclose(fp);
 	return 0;
-
 }
 
 int game_update(int mousedx, int mousedy)
 {
 	const uint8_t* keys = SDL_GetKeyboardState(NULL);
 
+	double rot = mousedx*PLAYER_ROTSPEED;
 	if (keys[SDL_SCANCODE_LEFT])
-		mousedx -= 2;
+		rot -= 10*PLAYER_ROTSPEED;
 	if (keys[SDL_SCANCODE_RIGHT])
-		mousedx += 2;
-	vec2_rotate(&player.dir, mousedx*PLAYER_ROTSPEED, &player.dir);
+		rot += 10*PLAYER_ROTSPEED;
+	vec2_rotate(&player.dir, rot, &player.dir);
 
 	vec2_t dir = {0, 0};
 	double spd = PLAYER_MOVESPEED;

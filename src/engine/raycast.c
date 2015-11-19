@@ -2,11 +2,13 @@
 #include <math.h>
 #include <stdio.h>
 #include "raycast.h"
+#include "graphics/graphics.h"
 #include "map/map.h"
 #include "map/tile.h"
 #include "math/vec2.h"
-#include "util/graphics.h"
 #include "util/util.h"
+
+#define MAX_RECURSION 3
 
 void cast(ray_t* r, hit_t* hit, map_t* map);
 void raystep(ray_t* r, map_t* map);
@@ -24,19 +26,36 @@ void raycast_render(SDL_Surface* sf, camera_t* cam, map_t* map)
 		ray_t r;
 		r.orig = cam->pos;
 		r.startdir = (vec2_t){cam->dir.x + plane.x * cx, cam->dir.y + plane.y * cx};
+		r.distance = 0;
 
-		hit_t hit;
+		raycast_column(sf, &r, map, x, cx, 0);
+	}
+}
 
-		cast(&r, &hit, map);
+void raycast_column(SDL_Surface* sf, ray_t* r, map_t* map, int x, double cx, int rec)
+{
+	if (rec >= MAX_RECURSION)
+		return;
+	hit_t hit;
+	cast(r, &hit, map);
+	if (!hit.hit)
+		return;
 
-		if (!hit.hit)
-			continue;
-
-		double dist = hit.distance / sqrt(1+cx*cx);
-		int lineh = (int)(sf->h / dist);
-		tile_t* t = map_getTileAt(map, r.mapX, r.mapY);
-		if (t && tile_isVisible(t) && t->render)
-			t->render(sf, t, x, sf->h/2 - lineh/2, sf->h/2 + lineh/2, &hit);
+	double dist = hit.distance / sqrt(1+cx*cx);
+	int lineh = (int)(sf->h / dist);
+	tile_t* tile = map_getTileAt(map, r->mapX, r->mapY);
+	if (tile && tile_isVisible(tile) && tile->render)
+	{
+		tileRenderData_t rd;
+		rd.x = x;
+		rd.h = lineh;
+		rd.cx = cx;
+		rd.hit = &hit;
+		rd.rec = rec+1;
+		rd.dir = &r->startdir;
+		rd.map = map;
+		rd.distance = r->distance;
+		tile->render(sf, tile, &rd);
 	}
 }
 
@@ -85,14 +104,13 @@ void cast(ray_t* r, hit_t* hit, map_t* map)
 
 	r->mapX = (int) r->orig.x;
 	r->mapY = (int) r->orig.y;
-	r->distance = 0;
 
 	for (int _=0; _<100; _++)
 	{
 		raystep(r, map);
 
 		tile_t* ht = map_getTileAt(map, r->mapX, r->mapY);
-		if (ht && ht->type > 0)
+		if (ht && tile_isVisible(ht))
 		{
 			hit->distance = r->distance;
 			hit->side = r->side;
@@ -140,6 +158,29 @@ void raystep(ray_t* r, map_t* map)
 	r->distance += sqrt(d.x*d.x + d.y*d.y);
 
 	r->side = sideDistX < sideDistY ?
-			stepX < 0 ? SIDE_WEST : SIDE_EAST:
+			stepX < 0 ? SIDE_EAST : SIDE_WEST:
 			stepY < 0 ? SIDE_NORTH : SIDE_SOUTH;
+}
+
+void raycast_getSideNormal(int side, vec2_t* out)
+{
+	switch(side)
+	{
+		case SIDE_NORTH:
+			out->x = 0;
+			out->y = 1;
+			break;
+		case SIDE_EAST:
+			out->x = 1;
+			out->y = 0;
+			break;
+		case SIDE_SOUTH:
+			out->x = 0;
+			out->y = -1;
+			break;
+		case SIDE_WEST:
+			out->x = -1;
+			out->y = 0;
+			break;
+	}
 }

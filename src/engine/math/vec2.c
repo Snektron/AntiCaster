@@ -1,5 +1,6 @@
 #include <math.h>
 #include "vec2.h"
+#include "../raycast.h"
 
 void vec2_add(vec2_t* v0, vec2_t* v1, vec2_t* out)
 {
@@ -62,8 +63,26 @@ double vec2_dot(vec2_t* v0, vec2_t* v1)
 	return v0->x * v0->y + v1->x * v1->y;
 }
 
-void vec2_reflect(vec2_t* i, vec2_t* n, vec2_t* out)
+void vec2_reflect(vec2_t* i, int side, vec2_t* out)
 {
-	vec2_scale(n, 2*vec2_dot(i, n), out);
-	vec2_addScale(i, out, -1, out);
+	switch(side)
+	{
+		case SIDE_NORTH:
+			out->x = i->x;
+			out->y = -i->y;
+			break;
+		case SIDE_EAST:
+			out->x = -i->x;
+			out->y = i->y;
+			break;
+		case SIDE_SOUTH:
+			out->x = i->x;
+			out->y = -i->y;
+			break;
+		case SIDE_WEST:
+			out->x = -i->x;
+			out->y = i->y;
+			break;
+	}
+	vec2_normalize(out, out);
 }
