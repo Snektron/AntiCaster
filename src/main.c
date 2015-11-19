@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 
 	int pressed = 0;
 
-	game_init();
+	quit = game_init();
 
 	int tpsGameTick = SDL_GetTicks(), tpsLoops;
 

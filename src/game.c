@@ -14,51 +14,50 @@
 camera_t player;
 map_t m;
 
-void game_init()
+int game_init()
 {
 	player.pos = (vec2_t) {5, 5};
 	raycast_getSideNormal(SIDE_NORTH, &player.dir);
+
+	FILE *fp = fopen("map.txt", "r");
+	if (!fp)
+		return 1;
 
 	tile_t defaultWall = TILE_EMPTY;
 	tile_t bluewall = TILE_WALL(0xFF); //{1, FLAG_COLLIDABLE, 0, (vec2_t){1., 1.}};
 	tile_t greenwall = TILE_WALL(0xFF00);
 	tile_t redwall = TILE_WALL(0xFF0000);
-	tile_t compressedWall = TILE_SPACE(((vec2_t){1., .1}));
-	tile_t stretchedWall = TILE_SPACE(((vec2_t){1., 10.}));
+	tile_t shwall = TILE_SPACE(((vec2_t){1., .1}));
+	tile_t svwall = TILE_SPACE(((vec2_t){.1, 1.}));
+	tile_t chwall = TILE_SPACE(((vec2_t){1., 10.}));
+	tile_t cvwall = TILE_SPACE(((vec2_t){10., 1.}));
 	tile_t mirrorWall = TILE_MIRROR();
 
 	map_init(&m, 20, 20, &defaultWall);
 
-	for (int i=0; i<20; i++)
-	{
-		map_setTileAt(&m, i, 0, &bluewall);
-		map_setTileAt(&m, i, 19, &bluewall);
-		map_setTileAt(&m, 0, i, &bluewall);
-		map_setTileAt(&m, 19, i, &bluewall);
+	int i = 0;
+	char c;
+	while ((c = fgetc(fp)) != EOF) {
+		if (c == '\n') continue;
+		else if (c == '#') map_setTileAt(&m, i/20, i%20, &bluewall);
+		else if (c == 'r') map_setTileAt(&m, i/20, i%20, &redwall);
+		else if (c == 'g') map_setTileAt(&m, i/20, i%20, &greenwall);
+		else if (c == '|') map_setTileAt(&m, i/20, i%20, &svwall);
+		else if (c == '-') map_setTileAt(&m, i/20, i%20, &shwall);
+		else if (c == '.') map_setTileAt(&m, i/20, i%20, &cvwall);
+		else if (c == ',') map_setTileAt(&m, i/20, i%20, &chwall);
+		else if (c == 'm') map_setTileAt(&m, i/20, i%20, &mirrorWall);
+		i++;
 	}
 
-	map_setTileAt(&m, 10, 10, &greenwall);
-	map_setTileAt(&m, 11, 10, &compressedWall);
-	map_setTileAt(&m, 12, 10, &compressedWall);
-	map_setTileAt(&m, 13, 10, &compressedWall);
-	map_setTileAt(&m, 14, 10, &greenwall);
-
-	map_setTileAt(&m, 10, 8, &greenwall);
-	map_setTileAt(&m, 11, 8, &stretchedWall);
-	map_setTileAt(&m, 12, 8, &stretchedWall);
-	map_setTileAt(&m, 13, 8, &stretchedWall);
-	map_setTileAt(&m, 14, 8, &greenwall);
-
-	map_setTileAt(&m, 11, 16, &redwall);
-
-	map_setTileAt(&m, 6, 8, &mirrorWall);
-
-	map_setTileAt(&m, 6, 10, &mirrorWall);
+	fclose(fp);
+	return 0;
 }
 
 int game_update(int mousedx, int mousedy)
 {
 	const uint8_t* keys = SDL_GetKeyboardState(NULL);
+
 	double rot = mousedx*PLAYER_ROTSPEED;
 	if (keys[SDL_SCANCODE_LEFT])
 		rot -= 10*PLAYER_ROTSPEED;
@@ -75,9 +74,9 @@ int game_update(int mousedx, int mousedy)
 		spd *= 10.;
 
 	vec2_t dirCrossed = {player.dir.y, -player.dir.x};
-	if (keys[SDL_SCANCODE_W])
+	if (keys[SDL_SCANCODE_W] || keys[SDL_SCANCODE_UP])
 		vec2_add(&dir, &player.dir, &dir);
-	if (keys[SDL_SCANCODE_S])
+	if (keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN])
 		vec2_addScale(&dir, &player.dir, -1, &dir);
 	if (keys[SDL_SCANCODE_A])
 		vec2_addScale(&dir, &dirCrossed, -1, &dir);
