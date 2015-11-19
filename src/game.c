@@ -53,13 +53,18 @@ void game_init()
 
 	map_setTileAt(&m, 6, 8, &mirrorWall);
 
-//	map_setTileAt(&m, 6, 10, &mirrorWall);
+	map_setTileAt(&m, 6, 10, &mirrorWall);
 }
 
 int game_update(int mousedx, int mousedy)
 {
 	const uint8_t* keys = SDL_GetKeyboardState(NULL);
-	vec2_rotate(&player.dir, mousedx*PLAYER_ROTSPEED, &player.dir);
+	double rot = mousedx*PLAYER_ROTSPEED;
+	if (keys[SDL_SCANCODE_LEFT])
+		rot -= 10*PLAYER_ROTSPEED;
+	if (keys[SDL_SCANCODE_RIGHT])
+		rot += 10*PLAYER_ROTSPEED;
+	vec2_rotate(&player.dir, rot, &player.dir);
 
 	vec2_t dir = {0, 0};
 	double spd = PLAYER_MOVESPEED;

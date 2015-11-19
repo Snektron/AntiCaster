@@ -8,7 +8,7 @@
 #include "math/vec2.h"
 #include "util/util.h"
 
-#define MAX_RECURSION 2
+#define MAX_RECURSION 3
 
 void cast(ray_t* r, hit_t* hit, map_t* map);
 void raystep(ray_t* r, map_t* map);
@@ -34,6 +34,8 @@ void raycast_render(SDL_Surface* sf, camera_t* cam, map_t* map)
 
 void raycast_column(SDL_Surface* sf, ray_t* r, map_t* map, int x, double cx, int rec)
 {
+	if (rec >= MAX_RECURSION)
+		return;
 	hit_t hit;
 	cast(r, &hit, map);
 	if (!hit.hit)
@@ -42,7 +44,7 @@ void raycast_column(SDL_Surface* sf, ray_t* r, map_t* map, int x, double cx, int
 	double dist = hit.distance / sqrt(1+cx*cx);
 	int lineh = (int)(sf->h / dist);
 	tile_t* tile = map_getTileAt(map, r->mapX, r->mapY);
-	if (tile && tile_isVisible(tile) && tile->render && rec < MAX_RECURSION)
+	if (tile && tile_isVisible(tile) && tile->render)
 	{
 		tileRenderData_t rd;
 		rd.x = x;
