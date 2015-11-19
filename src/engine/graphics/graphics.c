@@ -2,7 +2,8 @@
 #include <math.h>
 #include <stdio.h>
 #include "graphics.h"
-#include "util.h"
+#include "color.h"
+#include "../util/util.h"
 
 void graphics_clear(SDL_Surface* sf)
 {
@@ -15,7 +16,7 @@ void graphics_setPixel(SDL_Surface* sf, int x, int y, color_t c)
 	{
 		Uint32 *pixels = (Uint32*) sf->pixels;
 		int offset = (sf->pitch / sizeof(Uint32)) * y + x;
-		*(pixels + offset) = SDL_MapRGBA(sf->format, c >> 16 & 0xFF, c >> 8 & 0xFF, c & 0xFF, 0xFF);
+		*(pixels + offset) = SDL_MapRGBA(sf->format, RED(c), GREEN(c), BLUE(c), 0xFF);
 	}
 }
 

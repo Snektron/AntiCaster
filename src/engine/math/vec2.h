@@ -16,6 +16,6 @@ void vec2_mul(vec2_t* v0, vec2_t* v1, vec2_t* out);
 void vec2_div(vec2_t* v0, vec2_t* v1, vec2_t* out);
 void vec2_scale(vec2_t* v0, double scale, vec2_t* out);
 double vec2_dot(vec2_t* v0, vec2_t* v1);
-void vec2_reflect(vec2_t* v0, vec2_t* n, vec2_t* out);
+void vec2_reflect(vec2_t* i, int side, vec2_t* out);
 
 #endif /* VEC2_H_ */

@@ -4,7 +4,7 @@
 #include "../math/vec2.h"
 #include "tile.h"
 
-typedef struct
+typedef struct map
 {
 	int width, height;
 	tile_t def;

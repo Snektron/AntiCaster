@@ -2,8 +2,7 @@
 #define GRAPHICS_H_
 
 #include <SDL2/SDL.h>
-
-typedef uint32_t color_t;
+#include "color.h"
 
 void graphics_clear(SDL_Surface* sf);
 void graphics_setPixel(SDL_Surface* sf, int x, int y, color_t c);

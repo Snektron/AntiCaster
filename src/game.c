@@ -7,7 +7,6 @@
 #include "engine/map/map.h"
 #include "engine/map/tile.h"
 #include "engine/math/vec2.h"
-#include "engine/util/graphics.h"
 
 #define PLAYER_MOVESPEED 0.05
 #define PLAYER_ROTSPEED 0.007
@@ -18,14 +17,15 @@ map_t m;
 void game_init()
 {
 	player.pos = (vec2_t) {5, 5};
-	player.dir = (vec2_t) {-1., 0.};
+	raycast_getSideNormal(SIDE_NORTH, &player.dir);
 
 	tile_t defaultWall = TILE_EMPTY;
-	tile_t bluewall = TILE_WALL(1,0xFF); //{1, FLAG_COLLIDABLE, 0, (vec2_t){1., 1.}};
-	tile_t greenwall = TILE_WALL(2,0xFF00);
-	tile_t redwall = TILE_WALL(3,0xFF00);
+	tile_t bluewall = TILE_WALL(0xFF); //{1, FLAG_COLLIDABLE, 0, (vec2_t){1., 1.}};
+	tile_t greenwall = TILE_WALL(0xFF00);
+	tile_t redwall = TILE_WALL(0xFF0000);
 	tile_t compressedWall = TILE_SPACE(((vec2_t){1., .1}));
 	tile_t stretchedWall = TILE_SPACE(((vec2_t){1., 10.}));
+	tile_t mirrorWall = TILE_MIRROR();
 
 	map_init(&m, 20, 20, &defaultWall);
 
@@ -50,6 +50,10 @@ void game_init()
 	map_setTileAt(&m, 14, 8, &greenwall);
 
 	map_setTileAt(&m, 11, 16, &redwall);
+
+	map_setTileAt(&m, 6, 8, &mirrorWall);
+
+//	map_setTileAt(&m, 6, 10, &mirrorWall);
 }
 
 int game_update(int mousedx, int mousedy)
