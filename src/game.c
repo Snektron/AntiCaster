@@ -59,6 +59,11 @@ int game_init()
 int game_update(int mousedx, int mousedy)
 {
 	const uint8_t* keys = SDL_GetKeyboardState(NULL);
+
+	if (keys[SDL_SCANCODE_LEFT])
+		mousedx -= 2;
+	if (keys[SDL_SCANCODE_RIGHT])
+		mousedx += 2;
 	vec2_rotate(&player.dir, mousedx*PLAYER_ROTSPEED, &player.dir);
 
 	vec2_t dir = {0, 0};
@@ -70,9 +75,9 @@ int game_update(int mousedx, int mousedy)
 		spd *= 10.;
 
 	vec2_t dirCrossed = {player.dir.y, -player.dir.x};
-	if (keys[SDL_SCANCODE_W])
+	if (keys[SDL_SCANCODE_W] || keys[SDL_SCANCODE_UP])
 		vec2_add(&dir, &player.dir, &dir);
-	if (keys[SDL_SCANCODE_S])
+	if (keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN])
 		vec2_addScale(&dir, &player.dir, -1, &dir);
 	if (keys[SDL_SCANCODE_A])
 		vec2_addScale(&dir, &dirCrossed, -1, &dir);
